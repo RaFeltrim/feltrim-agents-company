@@ -1,0 +1,69 @@
+services:
+  platform-one:
+    name: "Platform-One Orchestrator"
+    url: "http://localhost:8001"
+    health_endpoint: "/health"
+    description: "Orquestrador principal do sistema"
+
+  postgres:
+    name: "PostgreSQL Database"
+    url: "postgresql://qauser:qapass@localhost:5432/platformone"
+    health_endpoint: null
+    description: "Banco de dados PostgreSQL"
+
+  redis:
+    name: "Redis Cache"
+    url: "redis://localhost:6379"
+    health_endpoint: null
+    description: "Cache Redis e fila de mensagens"
+
+  cnpj-qa-training:
+    name: "CNPJ-QA-Training"
+    url: "http://localhost:8000"
+    health_endpoint: "/health"
+    description: "API de validação CNPJ"
+    dependencies: ["platform-one"]
+
+  fabrica-backend:
+    name: "Fabrica-de-Testes Backend"
+    url: "http://localhost:3000"
+    health_endpoint: "/health"
+    description: "Backend da plataforma de testes"
+    dependencies: ["platform-one"]
+
+  fabrica-frontend:
+    name: "Fabrica-de-Testes Frontend"
+    url: "http://localhost:5173"
+    health_endpoint: null
+    description: "Frontend da plataforma de testes"
+    dependencies: ["fabrica-backend"]
+
+workflows:
+  cnpj_validation:
+    name: "Validação CNPJ Completa"
+    steps:
+      - service: "cnpj-qa-training"
+        action: "validate"
+      - service: "fabrica-backend"
+        action: "execute_test"
+        parameters:
+          test_type: "cnpj_validation"
+    webhook_events:
+      - "cnpj_validation_completed"
+      - "cnpj_validation_failed"
+
+  test_execution:
+    name: "Execução de Testes"
+    steps:
+      - service: "fabrica-backend"
+        action: "execute_test"
+    webhook_events:
+      - "test_execution_completed"
+      - "test_execution_failed"
+
+webhook_events:
+  - "cnpj_validation_completed"
+  - "cnpj_validation_failed"
+  - "test_execution_completed"
+  - "test_execution_failed"
+  - "service_health_changed"

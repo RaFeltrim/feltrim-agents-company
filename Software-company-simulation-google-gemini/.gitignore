@@ -1,0 +1,42 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript
+*.tsbuildinfo
+dist/
+build/
+
+# Next.js
+.next/
+out/
+
+# Python (crewai-service)
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+*.log
+
+# Generated files
+generated/
+output/
+
+# OS
+.DS_Store
+Thumbs.db

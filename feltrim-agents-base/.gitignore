@@ -1,0 +1,60 @@
+# Secrets and environment
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.p12
+credentials.json
+secrets/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# IDE / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+
+# Logs and temp
+logs/
+*.log
+tmp/
+temp/
+*.tmp
+
+# Build artifacts
+dist/
+build/
+out/
+coverage/
+
+# Client data / evidence (NEVER commit)
+evidence/
+prints/
+massas/
+*.pdf.bak
+*-CONFIDENCIAL.*
+*-PRIVATE.*
+
+# Test artifacts
+test_out.txt
+test_out_utf8.txt
+test_list.txt

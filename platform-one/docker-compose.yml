@@ -1,0 +1,163 @@
+version: '3.8'
+
+services:
+  # Platform-One - Orquestrador Principal
+  platform-one:
+    build: ./backend
+    container_name: platform-one-orchestrator
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://qauser:qapass@postgres:5432/platformone
+      - REDIS_URL=redis://redis:6379
+      - CNPJ_QA_URL=http://cnpj-qa-training:8000
+      - FABRICA_BACKEND_URL=http://fabrica-backend:3000
+      - FABRICA_FRONTEND_URL=http://fabrica-frontend:5173
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./config:/app/config:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Database PostgreSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: platform-one-db
+    environment:
+      POSTGRES_DB: platformone
+      POSTGRES_USER: qauser
+      POSTGRES_PASSWORD: qapass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./config/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qauser -d platformone"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache + Message Queue
+  redis:
+    image: redis:7-alpine
+    container_name: platform-one-cache
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # CNPJ-QA-Training (Volume Mount Local)
+  cnpj-qa-training:
+    image: python:3.12-slim
+    container_name: cnpj-qa-training
+    working_dir: /app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../CNPJ-QA-Training:/app:ro
+    command: >
+      sh -c "
+        pip install -r requirements.txt &&
+        python src/api/main.py
+      "
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - platform-one
+
+  # Fabrica-de-Testes Backend (Volume Mount Local)
+  fabrica-backend:
+    image: node:18-alpine
+    container_name: fabrica-backend
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../fabrica-de-testes/backend:/app:ro
+    command: >
+      sh -c "
+        npm install &&
+        npm run dev
+      "
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - platform-one
+
+  # Fabrica-de-Testes Frontend (Volume Mount Local)
+  fabrica-frontend:
+    image: node:18-alpine
+    container_name: fabrica-frontend
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../fabrica-de-testes/frontend:/app:ro
+    command: >
+      sh -c "
+        npm install &&
+        npm run dev -- --host 0.0.0.0
+      "
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - fabrica-backend
+
+  # AI Agent Service (LangGraph/CrewAI)
+  ai-agent-service:
+    image: python:3.11-slim
+    container_name: ai-agent-service
+    working_dir: /app
+    ports:
+      - "3002:3002"
+    volumes:
+      - ../Software-company-simulation-google-gemini/crewai-service:/app
+      - ../feltrim-agents-base:/feltrim-agents-base:ro
+      - /var/run/docker.sock:/var/run/docker.sock # Needed for QA Docker-in-Docker
+    environment:
+      - PORT=3002
+      - OLLAMA_HOST=http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: >
+      sh -c "
+        apt-get update && apt-get install -y docker.io &&
+        pip install -r requirements.txt &&
+        python server.py
+      "
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:3002/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - platform-one
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: platform-one-network

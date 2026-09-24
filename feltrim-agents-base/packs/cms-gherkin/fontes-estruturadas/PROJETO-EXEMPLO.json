@@ -1,0 +1,235 @@
+{
+  "slug": "PROJETO-EXEMPLO",
+  "title": "Parametrizacao ficticia de cobranca e recebimento",
+  "version": "treinamento",
+  "generated_at": "2026-03-20",
+  "source_documents": [
+    "USs-Avaliar/PROJETO-EXEMPLO.docx"
+  ],
+  "summary": "Exemplo ficticio de parametrizacao de cobranca e recebimento criado exclusivamente para treinamento no uso do pacote CMS-Gherkin.",
+  "business_problem": "A US descreve a necessidade de separar cobrancas e recebimentos entre um sistema legado ficticio e um sistema atual ficticio, evitando mistura operacional.",
+  "functional_goal": "Criar a parametrizacao do Projeto exemplo com contas de controle distintas, produtos distintos, codigos distintos de operacao, carteiras corretas por tipo de cobranca, reflexo em todos os modulos e geracao de arquivo de retorno.",
+  "main_context": [
+    "O sistema precisa diferenciar recebimentos do fluxo legado e do fluxo atual.",
+    "A separacao deve ocorrer sem impacto ao usuario final.",
+    "A parametrizacao deve refletir em todos os modulos.",
+    "As carteiras definidas para o treinamento devem ser reaproveitadas conforme a regra."
+  ],
+  "dependencies": [
+    "Reflexo da parametrizacao em todos os modulos do ambiente de exemplo.",
+    "Disponibilidade das carteiras ficticias 101 e 202.",
+    "Separacao entre fluxo legado e fluxo atual ficticios.",
+    "Diretorio configuravel para retorno."
+  ],
+  "risks": [
+    "Mistura indevida entre fluxos ficticios.",
+    "Associacao incorreta entre produto e carteira.",
+    "Perda de rastreabilidade entre AC e cenario.",
+    "Geracao incorreta do arquivo de retorno."
+  ],
+  "test_data": [
+    "Registro com Ocorrencia Tipo A.",
+    "Registro com Ocorrencia Tipo B.",
+    "Emissao avulsa via Portal Exemplo.",
+    "Emissao avulsa via Central de Atendimento.",
+    "Emissao avulsa via Canal Interno.",
+    "Geracao de retorno em diretorio configuravel."
+  ],
+  "attention_points": [
+    {
+      "theme": "Parametrizacao",
+      "question": "Confirmar o reflexo da configuracao em todos os modulos do ambiente ficticio."
+    },
+    {
+      "theme": "Carteiras",
+      "question": "Garantir o uso correto das carteiras 101 e 202."
+    },
+    {
+      "theme": "Retorno",
+      "question": "Validar a geracao do arquivo em diretorio configuravel."
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC 1",
+      "text": "Parametrizacao refletida em todos os modulos."
+    },
+    {
+      "id": "AC 2",
+      "text": "Criacao de 3 contas de controle distintas."
+    },
+    {
+      "id": "AC 3",
+      "text": "Criacao de 3 produtos distintos."
+    },
+    {
+      "id": "AC 4",
+      "text": "Criacao de codigos distintos de operacao."
+    },
+    {
+      "id": "AC 5",
+      "text": "Uso da carteira 101 para Ocorrencia Tipo A."
+    },
+    {
+      "id": "AC 6",
+      "text": "Uso da carteira 202 para Ocorrencia Tipo B e emissoes avulsas."
+    },
+    {
+      "id": "AC 7",
+      "text": "Banco Exemplo como emissor."
+    },
+    {
+      "id": "AC 8",
+      "text": "Geracao de arquivo de retorno em diretorio configuravel."
+    }
+  ],
+  "business_rules": [
+    {
+      "id": "RN01",
+      "title": "Criacao de produtos",
+      "description": "Devem existir 3 produtos distintos.",
+      "items": [
+        "Produto 1: Ocorrencia Tipo A.",
+        "Produto 2: Ocorrencia Tipo B.",
+        "Produto 3: emissoes avulsas pelos canais de atendimento."
+      ]
+    },
+    {
+      "id": "RN02",
+      "title": "Canais de emissao",
+      "description": "Os canais listados para o treinamento sao:",
+      "items": [
+        "Portal Exemplo.",
+        "Central de Atendimento.",
+        "Canal Interno."
+      ]
+    },
+    {
+      "id": "RN03",
+      "title": "Carteiras",
+      "description": "As carteiras devem obedecer a separacao funcional.",
+      "items": [
+        "Carteira 101 e exclusiva para Ocorrencia Tipo A.",
+        "Carteira 202 atende Ocorrencia Tipo B e emissoes avulsas."
+      ]
+    },
+    {
+      "id": "RN04",
+      "title": "Operacoes",
+      "description": "Cada produto deve ter codigo de operacao distinto.",
+      "items": []
+    },
+    {
+      "id": "RN05",
+      "title": "Contas de controle",
+      "description": "Cada produto deve ter conta de controle distinta.",
+      "items": []
+    },
+    {
+      "id": "RN06",
+      "title": "Banco emissor",
+      "description": "Os boletos devem ter o Banco Exemplo como emissor.",
+      "items": []
+    },
+    {
+      "id": "RN07",
+      "title": "Agenda",
+      "description": "Os produtos devem seguir agenda D+0 apos o vencimento.",
+      "items": []
+    },
+    {
+      "id": "RN08",
+      "title": "Retorno",
+      "description": "O arquivo de retorno deve ser gerado em diretorio configuravel.",
+      "items": []
+    }
+  ],
+  "scenario_strategy": "O exemplo foi quebrado por blocos funcionais para manter cenarios claros, rastreaveis e faceis de revisar durante o treinamento.",
+  "modeling_decisions": [
+    "Os nomes foram mantidos genericos para uso em treinamento.",
+    "Os canais foram agrupados em um unico cenario porque levam ao mesmo resultado.",
+    "Os valores e codigos usados sao ficticios."
+  ],
+  "feature_tags": [
+    "Treinamento",
+    "BDD",
+    "CMS"
+  ],
+  "feature_description": "Parametrizar o Projeto exemplo para separar cobrancas e recebimentos entre um sistema legado ficticio e um sistema atual ficticio, com produtos, contas de controle e carteiras vinculadas ao novo fluxo.",
+  "scenarios": [
+    {
+      "id": 1,
+      "name": "Reflexo da parametrizacao nos modulos",
+      "bdd": "Dado a necessidade de separar cobrancas e recebimentos entre dois fluxos ficticios Quando a parametrizacao do Projeto exemplo for concluida Então a configuracao deve refletir em todos os modulos sem misturar os fluxos",
+      "acs": [
+        "AC 1"
+      ],
+      "explanation": "Cobre o requisito transversal de propagacao da configuracao."
+    },
+    {
+      "id": 2,
+      "name": "Criacao das contas de controle",
+      "bdd": "Dado os tres tipos de cobranca definidos para o treinamento Quando as contas de controle forem cadastradas Então devem ser criadas 3 contas distintas para o Projeto exemplo",
+      "acs": [
+        "AC 2"
+      ],
+      "explanation": "Cobre a existencia de tres contas distintas."
+    },
+    {
+      "id": 3,
+      "name": "Criacao dos produtos e das operacoes",
+      "bdd": "Dado os novos produtos ficticios definidos para o treinamento Quando a parametrizacao dos produtos for realizada Então devem ser criados 3 produtos com codigos distintos de operacao",
+      "acs": [
+        "AC 3",
+        "AC 4"
+      ],
+      "explanation": "Agrupa produtos e operacoes, pois ambos surgem no mesmo momento da parametrizacao."
+    },
+    {
+      "id": 4,
+      "name": "Configuracao da Ocorrencia Tipo A",
+      "bdd": "Dado um registro classificado como Ocorrencia Tipo A Quando a cobranca correspondente for gerada Então o produto deve utilizar exclusivamente a carteira 101",
+      "acs": [
+        "AC 5"
+      ],
+      "explanation": "Isola a regra da carteira 101."
+    },
+    {
+      "id": 5,
+      "name": "Configuracao da Ocorrencia Tipo B",
+      "bdd": "Dado um registro classificado como Ocorrencia Tipo B Quando a cobranca correspondente for gerada Então o produto deve utilizar a carteira 202",
+      "acs": [
+        "AC 6"
+      ],
+      "explanation": "Isola a regra da carteira 202."
+    },
+    {
+      "id": 6,
+      "name": "Emissao avulsa pelos canais de atendimento",
+      "bdd": "Dado uma emissao avulsa pelos canais Portal Exemplo, Central de Atendimento ou Canal Interno Quando o boleto avulso for gerado Então a emissao deve utilizar o produto 3 com a carteira 202",
+      "acs": [
+        "AC 6"
+      ],
+      "explanation": "Explicita os canais e mantem a mesma expectativa funcional da carteira 202."
+    },
+    {
+      "id": 7,
+      "name": "Definicao do banco emissor",
+      "bdd": "Dado um boleto gerado para qualquer um dos produtos do Projeto exemplo Quando a cobranca for disponibilizada Então o Banco Exemplo deve ser o emissor do boleto",
+      "acs": [
+        "AC 7"
+      ],
+      "explanation": "Torna verificavel a regra do emissor."
+    },
+    {
+      "id": 8,
+      "name": "Geracao do arquivo de retorno",
+      "bdd": "Dado um retorno gerado para os produtos do Projeto exemplo Quando o arquivo de retorno for disponibilizado Então o arquivo deve ser gerado em diretorio configuravel",
+      "acs": [
+        "AC 8"
+      ],
+      "explanation": "Garante a existencia do retorno em diretorio configuravel."
+    }
+  ],
+  "conclusion": "O Projeto exemplo foi modelado como artefato de treinamento. O objetivo e demonstrar o metodo de avaliacao, rastreabilidade e geracao de BDDs sem expor informacoes de projetos reais."
+}

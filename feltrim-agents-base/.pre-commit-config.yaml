@@ -1,0 +1,116 @@
+# Pre-commit hooks para Feltrim Agents Base.
+#
+# Objetivo: shift-left. Bloquear no commit local o mesmo conjunto de problemas
+# que o CI (.github/workflows/ci.yml) bloqueia no PR. Evita ciclo "push - CI
+# vermelho - fix - push de novo" para erros triviais (lint, link quebrado,
+# placeholder vazado, email corporativo).
+#
+# Instalacao (uma vez por clone):
+#   pip install pre-commit
+#   pre-commit install
+#   pre-commit install --hook-type commit-msg   # opcional, para padrao de commit
+#
+# Rodar manualmente em todos arquivos:
+#   pre-commit run --all-files
+#
+# Rodar so um hook:
+#   pre-commit run markdownlint --all-files
+#
+# Pular tudo (NAO recomendado, so emergencia):
+#   git commit --no-verify
+#
+# Atualizar versoes dos hooks:
+#   pre-commit autoupdate
+
+minimum_pre_commit_version: "3.5.0"
+default_language_version:
+  python: python3
+default_stages: [pre-commit]
+fail_fast: false
+
+repos:
+  # ----------------------------------------------------------------------------
+  # Higiene basica de arquivo (trailing whitespace, EOF, conflitos de merge,
+  # arquivos grandes, etc). Hooks oficiais do pre-commit.
+  # ----------------------------------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
+        args: ["--maxkb=512"]
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+      - id: detect-private-key
+
+  # ----------------------------------------------------------------------------
+  # Job 1 espelhado - Markdown lint (markdownlint-cli2).
+  # Mesma config do CI: permissivo enquanto baseline consolida.
+  # ----------------------------------------------------------------------------
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.14.0
+    hooks:
+      - id: markdownlint-cli2
+        name: markdownlint (espelha CI job 1)
+        args:
+          - "**/*.md"
+          - "!node_modules/**"
+          - "!.git/**"
+        # Mantem warning enquanto baseline consolida (mesmo padrao do CI).
+        # Apos primeira passada limpa, trocar para `verbose: true` e bloquear.
+        verbose: true
+
+  # ----------------------------------------------------------------------------
+  # Job 2 espelhado - Flag words check (sanitizacao de boilerplate).
+  # Script local replica as 4 checagens do CI:
+  #   - caminhos absolutos
+  #   - .env real commitado
+  #   - API keys / tokens
+  #   - email corporativo nos ultimos 10 commits
+  # ----------------------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: flag-words-check
+        name: flag-words-check (espelha CI job 2)
+        entry: bash scripts/check-flag-words.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+      # ------------------------------------------------------------------------
+      # Job 4 espelhado - Structure sanity.
+      # Garante que arquivos e diretorios obrigatorios continuam presentes,
+      # e que o pack core mantem o numero minimo de gens e protocolos.
+      # ------------------------------------------------------------------------
+      - id: structure-check
+        name: structure-check (espelha CI job 4)
+        entry: bash scripts/check-structure.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+      # ------------------------------------------------------------------------
+      # Job 3 espelhado - Markdown link check.
+      # Opt-in (manual stage) porque a checagem completa demora ~30-60s e bate
+      # em rede. Rode antes de PR grande com:
+      #   pre-commit run markdown-link-check --hook-stage manual --all-files
+      # ------------------------------------------------------------------------
+      - id: markdown-link-check
+        name: markdown-link-check (espelha CI job 3, opt-in)
+        entry: bash scripts/check-links.sh
+        language: system
+        pass_filenames: false
+        stages: [manual]
+
+# ------------------------------------------------------------------------------
+# CI integration nota: o GitHub Actions ja roda essas checagens
+# (.github/workflows/ci.yml). Este arquivo so move a falha para ANTES do push,
+# reduzindo round-trip com a esteira. Em divergencia, o CI eh a fonte de verdade
+# - corrija o script local para espelhar o CI, nao o contrario.

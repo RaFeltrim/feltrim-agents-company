@@ -1,0 +1,68 @@
+{
+  "slug": "NOME-DO-EXEMPLO",
+  "title": "Titulo da PI ou US",
+  "version": "v1",
+  "generated_at": "2026-03-20",
+  "source_documents": [
+    "USs-Avaliar/NOME-DO-EXEMPLO.docx"
+  ],
+  "summary": "Resumo funcional curto.",
+  "business_problem": "Problema de negocio que a US resolve.",
+  "functional_goal": "Objetivo funcional esperado.",
+  "main_context": [
+    "Ponto de contexto 1"
+  ],
+  "dependencies": [
+    "Dependencia principal 1"
+  ],
+  "risks": [
+    "Risco principal 1"
+  ],
+  "test_data": [
+    "Massa de teste sugerida 1"
+  ],
+  "attention_points": [
+    {
+      "theme": "Tema",
+      "question": "Pergunta ou ponto de atencao"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC 1",
+      "text": "Criterio oficial consolidado."
+    }
+  ],
+  "business_rules": [
+    {
+      "id": "RN01",
+      "title": "Nome da regra",
+      "description": "Descricao curta da regra.",
+      "items": [
+        "Detalhe objetivo da regra"
+      ]
+    }
+  ],
+  "scenario_strategy": "Explique como a US foi quebrada em cenarios verificaveis.",
+  "modeling_decisions": [
+    "Decisao de modelagem 1"
+  ],
+  "feature_tags": [
+    "Treinamento",
+    "BDD",
+    "CMS"
+  ],
+  "feature_description": "Descricao da funcionalidade em duas ou tres linhas, sem repetir o titulo.",
+  "scenarios": [
+    {
+      "id": 1,
+      "name": "Nome do cenario",
+      "bdd": "Dado um contexto valido Quando uma acao for executada Então o resultado esperado deve ocorrer",
+      "acs": [
+        "AC 1"
+      ],
+      "explanation": "Motivo pelo qual o cenario existe."
+    }
+  ],
+  "conclusion": "Conclusao final da analise."
+}

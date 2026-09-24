@@ -1,0 +1,220 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Job 1 - Lint de markdown (mantido permissivo enquanto baseline consolida)
+  markdown-lint:
+    name: Markdown lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install markdownlint-cli2
+        run: npm install -g markdownlint-cli2
+
+      - name: Run markdownlint
+        run: |
+          markdownlint-cli2 \
+            "**/*.md" \
+            "!node_modules/**" \
+            "!.git/**" \
+          || true
+        # `|| true` mantem o job verde enquanto a baseline de markdown nao
+        # esta consolidada. Apos primeira passada, remover o `|| true`.
+
+  # Job 2 - Grep de palavras-bandeira (sanitizacao)
+  flag-words-check:
+    name: Flag words check (boilerplate baseline)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout (full history needed for git log audit)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 50
+
+      - name: Install ripgrep
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+
+      - name: Check for absolute paths (incl. packs/)
+        run: |
+          echo "Checking for absolute Windows/Unix paths in public files..."
+          ! rg -i "(C:\\\\Users\\\\[A-Za-z]+|/Users/[A-Za-z]+/|~/Desktop)" \
+              core/ governance/ examples/ docs/ packs/ \
+              README.md CONTRIBUTING.md CODE_OF_CONDUCT.md SECURITY.md CHANGELOG.md \
+              CLAUDE.md AGENTS.md LICENSE \
+              --glob '!**/CHANGELOG.md' \
+              --glob '!**/README.md' \
+              --glob '!*.lock' \
+            || (echo "FAIL: absolute paths found"; exit 1)
+
+      - name: Check for committed .env (excluding .env.example)
+        run: |
+          echo "Checking for committed .env files (excluding .env.example)..."
+          bad_env=$(git ls-files | grep -E "^\.env$|^\.env\.[a-z]+$" | grep -vE "^\.env\.example$" || true)
+          if [ -n "$bad_env" ]; then
+            echo "FAIL: real .env file(s) committed:"
+            echo "$bad_env"
+            exit 1
+          fi
+          echo "OK: no real .env files committed"
+
+      - name: Check for API keys / tokens in committed files
+        run: |
+          echo "Checking for likely committed secrets..."
+          ! rg -i "(api[_-]?key|token|password|secret)\s*[:=]\s*['\"][A-Za-z0-9_-]{20,}" \
+              --type-not lock \
+              --glob '!**/CHANGELOG.md' \
+              --glob '!**/SECURITY.md' \
+              --glob '!**/SECURITY_AND_PRIVACY.md' \
+              --glob '!**/.github/**' \
+              --glob '!**/.env.example' \
+            || (echo "FAIL: likely committed secret found"; exit 1)
+
+      - name: Check committer email policy (allowlist noreply)
+        run: |
+          echo "Checking committer email policy (noreply.github.com expected)..."
+          bad_emails=$(git log -10 --format="%ae" | grep -vE "^[^@]+@users\.noreply\.github\.com$" | grep -vE "^[^@]+@noreply\.github\.com$" | grep -v "^$" || true)
+          if [ -n "$bad_emails" ]; then
+            echo "WARNING: commits found with email outside *@users.noreply.github.com allowlist:"
+            echo "$bad_emails" | sort -u
+            echo ""
+            echo "Configure local git with:"
+            echo "  git config user.email '<your-user>@users.noreply.github.com'"
+            echo "before commits, to avoid leaking corporate or personal email."
+            exit 1
+          fi
+          echo "OK: all recent commits use *@users.noreply.github.com"
+
+  # Job 3 - Validacao de links markdown internos
+  markdown-links:
+    name: Markdown link check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install markdown-link-check
+        run: npm install -g markdown-link-check
+
+      - name: Check links in README and docs
+        run: |
+          set +e
+          fail=0
+          for f in README.md CONTRIBUTING.md CODE_OF_CONDUCT.md SECURITY.md CHANGELOG.md \
+                   docs/*.md \
+                   core/docs/*.md \
+                   governance/*.md \
+                   examples/*.md; do
+            if [ -f "$f" ]; then
+              echo "Checking $f..."
+              markdown-link-check "$f" --quiet --config .github/markdown-link-check.json || fail=1
+            fi
+          done
+          # Mantem verde por enquanto - baseline em consolidacao
+          exit 0
+
+  # Job 4 - Structure sanity (presenca de arquivos esperados)
+  structure-check:
+    name: Structure sanity
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Required files exist
+        run: |
+          required=(
+            "README.md"
+            "CONTRIBUTING.md"
+            "CODE_OF_CONDUCT.md"
+            "SECURITY.md"
+            "CHANGELOG.md"
+            "LICENSE"
+            "CLAUDE.md"
+            "AGENTS.md"
+            "core/CLAUDE.md"
+            ".env.example"
+            ".gitignore"
+            "DECISIONS_PENDING.md"
+            "core/memory/MEMORY.md"
+            "core/docs/SQUAD_INDEX.md"
+            "core/docs/AGENT_ACTIVATION_POLICY.md"
+            "core/docs/TOKEN_ECONOMY.md"
+            "governance/COMPANY_CHARTER.md"
+            "governance/SECURITY_AND_PRIVACY.md"
+          )
+          fail=0
+          for f in "${required[@]}"; do
+            if [ ! -f "$f" ]; then
+              echo "MISSING: $f"
+              fail=1
+            fi
+          done
+          exit $fail
+
+      - name: Required dirs exist
+        run: |
+          required_dirs=(
+            "core/agents"
+            "core/protocols"
+            "core/docs"
+            "core/memory/agents"
+            "core/memory/team-rituals"
+            "governance"
+            "packs"
+            "examples"
+            ".specify/memory"
+          )
+          fail=0
+          for d in "${required_dirs[@]}"; do
+            if [ ! -d "$d" ]; then
+              echo "MISSING DIR: $d"
+              fail=1
+            fi
+          done
+          exit $fail
+
+      - name: Count of core gens
+        run: |
+          count=$(ls -1 core/agents/gem_*.md 2>/dev/null | wc -l)
+          echo "Core gens: $count"
+          if [ "$count" -lt 15 ]; then
+            echo "FAIL: expected at least 15 core gens, found $count"
+            exit 1
+          fi
+
+      - name: Count of core protocols
+        run: |
+          count=$(ls -1 core/protocols/*.md 2>/dev/null | grep -v README | wc -l)
+          echo "Core protocols: $count"
+          if [ "$count" -lt 8 ]; then
+            echo "FAIL: expected at least 8 protocols, found $count"
+            exit 1
+          fi

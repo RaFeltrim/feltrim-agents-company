@@ -1,0 +1,18 @@
+# LangGraph Service Requirements
+
+# Core
+langchain-ollama
+langgraph
+langchain
+langchain-community
+langchain-core
+
+# Web Server
+fastapi
+uvicorn
+websockets
+
+# Utilities
+python-dotenv
+pydantic
+docker

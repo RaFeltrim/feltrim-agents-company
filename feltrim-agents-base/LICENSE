@@ -1,0 +1,29 @@
+Feltrim Agents Base - Proprietary License (DRAFT)
+
+Copyright (c) 2026 Rafael Feltrim. All rights reserved.
+
+Este repositorio contem o boilerplate canonico do Feltrim Agents Framework
+(FF), criacao original de Rafael Feltrim, incluindo personas, protocolos,
+rituais, governanca de agentes multi-IA e packs especializados.
+
+Permissoes provisorias (ate decisao final de licenciamento):
+
+- Uso interno por Rafael Feltrim e por agentes/colaboradores autorizados.
+- Leitura, estudo e referencia em projetos da empresa Feltrim Agents Company.
+
+Proibicoes provisorias:
+
+- Redistribuicao publica, parcial ou total, sem autorizacao escrita do autor.
+- Uso comercial por terceiros sem contrato.
+- Remocao de creditos a Rafael Feltrim em qualquer artefato derivado.
+- Submissao de prompts, brains ou packs a treinamento de modelos externos
+  sem autorizacao.
+
+Conteudo de terceiros:
+
+- Material com IP de terceiros (catalogos externos) NUNCA entra neste
+  repositorio publico sem auditoria de origem, autorizacao formal e
+  atribuicao explicita ao autor.
+
+Decisao de licenca final esta pendente. Ate la, este texto vale como
+declaracao provisoria. Ver `DECISIONS_PENDING.md`.

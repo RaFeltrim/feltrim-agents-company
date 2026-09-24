@@ -1,0 +1,16 @@
+{
+  "ignorePatterns": [
+    { "pattern": "^file://" },
+    { "pattern": "^<" },
+    { "pattern": "^https://github.com/RaFeltrim/feltrim-agents-base/security/advisories/new$" },
+    { "pattern": "^https://github.com/RaFeltrim/feltrim-agents-base/releases/tag/" },
+    { "pattern": "^https://github.com/RaFeltrim/feltrim-agents-base/compare/" }
+  ],
+  "replacementPatterns": [],
+  "httpHeaders": [],
+  "timeout": "20s",
+  "retryOn429": true,
+  "retryCount": 3,
+  "fallbackRetryDelay": "30s",
+  "aliveStatusCodes": [200, 206, 403, 999]
+}
